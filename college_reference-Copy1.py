@@ -175,11 +175,11 @@ fig.update_layout(
     width=1000,
     height=800,
     legend=dict(
-        orientation="v",       # vertical legend
+        orientation="v",
         yanchor="top",
         y=1,
         xanchor="left",
-        x=1.05,                # move legend slightly right of the chart
+        x=1.01,  # Move legend closer (try 1.01 or 1.02)
         font=dict(size=12),
         bordercolor="Black",
         borderwidth=1,
@@ -235,9 +235,16 @@ with tab1:
     st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
-    fig2, ax = plt.subplots(figsize=(14, 8))
-    heatmap_data = combined_asun_rescaled.set_index('School')  # Make sure this is available
-    sns.heatmap(heatmap_data, cmap='coolwarm', annot=True, vmin=1, vmax=10, linewidths=0.5, linecolor='gray', ax=ax)
+    all_teams = heatmap_data.index.tolist()
+    all_stats = heatmap_data.columns.tolist()
+    
+    selected_teams = st.multiselect("Select teams to display:", all_teams, default=all_teams)
+    selected_stats = st.multiselect("Select stats to display:", all_stats, default=all_stats)
+    
+    filtered_data = heatmap_data.loc[selected_teams, selected_stats]
+    
+    fig2, ax = plt.subplots(figsize=(max(8, len(selected_stats)*1.2), max(4, len(selected_teams)*0.5)))
+    sns.heatmap(filtered_data, cmap='coolwarm', annot=True, vmin=1, vmax=10, linewidths=0.5, linecolor='gray', ax=ax)
     ax.set_title('ASUN Stats (Scale: 1-10)')
     plt.xticks(rotation=45, ha='right')
     plt.yticks(rotation=0)
