@@ -46,9 +46,6 @@ asun.loc[:, 'School'] = asun['School'] + ' 2024'
 # In[9]:
 
 
-asun
-
-
 # In[12]:
 
 
@@ -108,9 +105,6 @@ combined_asun.reset_index(drop=True, inplace=True)
 
 
 # In[20]:
-
-
-combined_asun
 
 
 # In[22]:
@@ -177,14 +171,6 @@ fig.update_layout(
         radialaxis=dict(visible=True, range=[0, 10])
     ),
     showlegend=True,
-    title='ASUN Teams Radar Chart 2023-25 (Rescaled)'
-)
-
-fig.update_layout(
-    polar=dict(
-        radialaxis=dict(visible=True, range=[0, 10])
-    ),
-    showlegend=True,
     title='ASUN Teams Radar Chart 2023-25 (Rescaled)',
     width=1000,    # Increase width
     height=800     # Increase height
@@ -224,8 +210,6 @@ import plotly.graph_objects as go
 
 # Example: Replace this with your actual figure and data
 st.title("ASUN Basketball Insights")
-
-st.write("Radar Chart of Team Stats (Interactive)")
 
 st.plotly_chart(fig)
 
