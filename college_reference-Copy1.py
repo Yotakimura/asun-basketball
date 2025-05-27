@@ -212,6 +212,21 @@ import plotly.graph_objects as go
 
 # --- STREAMLIT APP ---
 
+st.set_page_config(layout="wide")
+
+# Optional CSS to reduce padding
+st.markdown(
+    """
+    <style>
+        .main .block-container {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.title("ASUN Basketball Insights")
 
 tab1, tab2 = st.tabs(["Radar Chart", "Heatmap"])
