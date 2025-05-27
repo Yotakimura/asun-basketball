@@ -172,16 +172,17 @@ fig.update_layout(
     ),
     showlegend=True,
     title='ASUN Teams Radar Chart 2023-25 (Rescaled)',
-    width=1000,    # Increase width
-    height=800     # Increase height
-
+    width=1000,
+    height=800,
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=-0.2,
+        xanchor="center",
+        x=0.5,
+        font=dict(size=12)
+    )
 )
-
-fig.show()
-fig.write_html("asun_radar_chart.html")
-
-
-# In[34]:
 
 
 # Set up the heatmap figure
@@ -200,6 +201,19 @@ plt.tight_layout()
 plt.show()
 
 
+
+# --- HEATMAP (save as image) ---
+plt.figure(figsize=(14, 8))
+heatmap_data = combined_asun_rescaled.set_index('School')
+sns.heatmap(heatmap_data, cmap='coolwarm', annot=True, vmin=1, vmax=10, linewidths=0.5, linecolor='gray')
+plt.title('ASUN Stats (Scale: 1-10)')
+plt.xticks(rotation=45, ha='right')
+plt.yticks(rotation=0)
+plt.tight_layout()
+plt.savefig("asun_heatmap.png")
+plt.close()
+
+
 # In[36]:
 
 
@@ -208,14 +222,15 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-# Example: Replace this with your actual figure and data
+# --- STREAMLIT APP ---
+
 st.title("ASUN Basketball Insights")
 
-st.plotly_chart(fig)
+tab1, tab2 = st.tabs(["Radar Chart", "Heatmap"])
 
+with tab1:
+    st.plotly_chart(fig, use_container_width=True)
 
-# In[ ]:
-
-
-
-
+with tab2:
+    heatmap_img = Image.open("asun_heatmap.png")
+    st.image(heatmap_img, caption="ASUN Stats (Scale: 1-10)", use_column_width=True)
