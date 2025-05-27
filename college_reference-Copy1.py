@@ -232,17 +232,44 @@ st.title("ASUN Basketball Insights")
 tab1, tab2 = st.tabs(["Radar Chart", "Heatmap"])
 
 with tab1:
+    st.markdown("""
+    ### Understanding the Radar Chart
+    
+    This radar chart visualizes and compares the performance of all ASUN Conference basketball teams across the 2023-24 and 2024-25 seasons.  
+    Each statistical category is rescaled to a 1–10 range, where **higher values are better** (10 being best, 1 being worst).  
+    For most stats, higher numbers are closer to 10. However, for **DRtg** (Defensive Rating), **TOV** (Turnovers), and **PF** (Personal Fouls), 
+    **lower values are better**—so teams with lower numbers in these categories score closer to 10.
+    
+    **How to use the chart:**  
+    - Each colored shape represents a team.  
+    - Hover over the lines to see each team's value for that stat.  
+    - Compare the size and shape: a more "filled out" shape means stronger performance across more categories.
+    
+    ---
+    **Stat Glossary:**  
+    - **ORtg (Offensive Rating):** Estimates the number of points a team scores per 100 possessions. Higher is better.
+    - **DRtg (Defensive Rating):** Estimates the number of points a team allows per 100 possessions. Lower is better.
+    """)
     st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
+    st.markdown("""
+    ### Understanding the Heatmap
+    
+    Use the controls below to select specific teams or statistics to focus the heatmap.  
+    This interactive heatmap shows scaled values (1–10) for each stat, for each team.  
+    **Red** cells indicate high values, and **blue** cells indicate low values in each category.
+    
+    **How to use the heatmap:**  
+    - Use the multi-select boxes to customize which teams and stats you want to compare.
+    - Hover over a cell to see the exact value.
+    """)
+    # Interactive controls
     all_teams = heatmap_data.index.tolist()
     all_stats = heatmap_data.columns.tolist()
-    
     selected_teams = st.multiselect("Select teams to display:", all_teams, default=all_teams)
     selected_stats = st.multiselect("Select stats to display:", all_stats, default=all_stats)
-    
     filtered_data = heatmap_data.loc[selected_teams, selected_stats]
-    
     fig2, ax = plt.subplots(figsize=(max(8, len(selected_stats)*1.2), max(4, len(selected_teams)*0.5)))
     sns.heatmap(filtered_data, cmap='coolwarm', annot=True, vmin=1, vmax=10, linewidths=0.5, linecolor='gray', ax=ax)
     ax.set_title('ASUN Stats (Scale: 1-10)')
