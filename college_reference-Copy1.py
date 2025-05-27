@@ -165,7 +165,7 @@ for i, row in combined_asun_rescaled.iterrows():
         line=dict(width=2)
     ))
 
-# Update layout
+# Update layout: Legend on the right
 fig.update_layout(
     polar=dict(
         radialaxis=dict(visible=True, range=[0, 10])
@@ -175,12 +175,15 @@ fig.update_layout(
     width=1000,
     height=800,
     legend=dict(
-        orientation="h",
-        yanchor="bottom",
-        y=-0.2,
-        xanchor="center",
-        x=0.5,
-        font=dict(size=12)
+        orientation="v",       # vertical legend
+        yanchor="top",
+        y=1,
+        xanchor="left",
+        x=1.05,                # move legend slightly right of the chart
+        font=dict(size=12),
+        bordercolor="Black",
+        borderwidth=1,
+        bgcolor="white"
     )
 )
 
@@ -202,21 +205,6 @@ plt.show()
 
 
 
-# --- HEATMAP (save as image) ---
-plt.figure(figsize=(14, 8))
-heatmap_data = combined_asun_rescaled.set_index('School')
-sns.heatmap(heatmap_data, cmap='coolwarm', annot=True, vmin=1, vmax=10, linewidths=0.5, linecolor='gray')
-plt.title('ASUN Stats (Scale: 1-10)')
-plt.xticks(rotation=45, ha='right')
-plt.yticks(rotation=0)
-plt.tight_layout()
-plt.savefig("asun_heatmap.png")
-plt.close()
-
-
-# In[36]:
-
-
 # app.py
 import streamlit as st
 import pandas as pd
@@ -232,5 +220,12 @@ with tab1:
     st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
-    heatmap_img = Image.open("asun_heatmap.png")
-    st.image(heatmap_img, caption="ASUN Stats (Scale: 1-10)", use_column_width=True)
+    fig2, ax = plt.subplots(figsize=(14, 8))
+    heatmap_data = combined_asun_rescaled.set_index('School')  # Make sure this is available
+    sns.heatmap(heatmap_data, cmap='coolwarm', annot=True, vmin=1, vmax=10, linewidths=0.5, linecolor='gray', ax=ax)
+    ax.set_title('ASUN Stats (Scale: 1-10)')
+    plt.xticks(rotation=45, ha='right')
+    plt.yticks(rotation=0)
+    plt.tight_layout()
+    st.pyplot(fig2)
+    plt.close(fig2)
