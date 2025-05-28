@@ -378,19 +378,9 @@ with tab3:
             return val
         comparison_display = comparison_display.applymap(round_if_number)
 
-        st.markdown("""
-            <style>
-            .stDataFrame thead tr th:first-child,
-            .stDataFrame tbody tr th {
-                min-width: 180px;
-                max-width: 400px;
-                white-space: pre-wrap;
-                word-break: break-word;
-            }
-            </style>
-            """, unsafe_allow_html=True)
 
-        st.dataframe(comparison_display)
+        comparison_display.index = comparison_display.index.map(lambda x: x + "   ")
+        st.dataframe(comparison_display, width=1200)
 
         # -- Interactive bar chart --
         comparison_stats = comparison.index.tolist()
