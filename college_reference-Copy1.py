@@ -363,31 +363,31 @@ with tab3:
     }
     
     st.markdown("### W/L Stats Comparison")
-    
+
+
     team_list = list(team_urls.keys())
     selected_team = st.radio("Select a Team", team_list, index=0)
-    
+
     url, table_idx = team_urls[selected_team]
     comparison = fetch_and_process_team_stats(url, table_idx)
-    
+
     if isinstance(comparison, str):
         st.error(comparison)
     else:
-        # --- Insert the percent conversion/display code here! ---
-        # Safe handling for percent columns (multiply by 100)
+        # Safe percent handling (multiply by 100 for percent columns)
         for pct_col in ['FT PCT', 'Opp FT PCT', '3FG PCT', 'Opp 3FG PCT', 'FG PCT', 'Opp FG PCT']:
             if pct_col in comparison.index:
                 for c in ['Win Average', 'Lose Average', 'Difference']:
                     if c in comparison.columns:
-                        comparison.loc[pct_col, c] = round(float(comparison.loc[pct_col, c]) * 100, 2)
-                        
+                        comparison.loc[pct_col, c] = float(comparison.loc[pct_col, c]) * 100
+
         # Format percent columns for display
         def add_percent(val):
             try:
                 return f"{val:.2f}%" if isinstance(val, float) else val
             except:
                 return val
-                
+
         comparison_display = comparison.copy()
         for pct_col in ['FT PCT', 'Opp FT PCT', '3FG PCT', 'Opp 3FG PCT', 'FG PCT', 'Opp FG PCT']:
             if pct_col in comparison_display.index:
@@ -395,20 +395,22 @@ with tab3:
                     if c in comparison_display.columns:
                         comparison_display.loc[pct_col, c] = add_percent(comparison_display.loc[pct_col, c])
 
-
+        # Round all numbers to 2 decimals for display (except percent strings)
         def round_if_number(val):
             if isinstance(val, float):
                 return round(val, 2)
             return val
         comparison_display = comparison_display.applymap(round_if_number)
+
         st.dataframe(comparison_display)
 
-        
+        # -- Interactive bar chart --
         comparison_stats = comparison.index.tolist()
         selected_stat = st.selectbox("Select stat to visualize:", comparison_stats)
+
         win_val = float(comparison.loc[selected_stat, "Win Average"])
         lose_val = float(comparison.loc[selected_stat, "Lose Average"])
-    
+
         fig_bar = go.Figure(
             data=[
                 go.Bar(name="Win Average", x=["Win"], y=[win_val], marker_color='seagreen', text=[f"{win_val:.2f}"], textposition='outside'),
@@ -431,3 +433,4 @@ with tab3:
             font=dict(size=14, color="black")
         )
         st.plotly_chart(fig_bar, use_container_width=True)
+    
