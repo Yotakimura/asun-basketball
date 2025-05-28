@@ -408,42 +408,205 @@ with tab3:
 
 with tab4:
     st.header("Play-By-Play Analysis")
+
     url = st.text_input("Enter the URL of the play-by-play stats page:")
 
     if url:
         try:
             tables = pd.read_html(url)
-            st.write("Found the following tables on the page:")
-            for i, table in enumerate(tables):
-                st.write(f"Table {i}:")
-                st.dataframe(table.head())
+            st.success(f"Loaded {len(tables)} tables from the URL.")
 
-            table_idx = st.number_input(
-                "Select the table index that contains the play-by-play data:",
-                min_value=0,
-                max_value=len(tables) - 1,
-                value=0,
-                step=1,
-            )
-            pbp_df = tables[int(table_idx)]
-            st.write("### Selected Play-By-Play Data")
-            st.dataframe(pbp_df)
+            # Guess play-by-play tables: look for those with both 'Time' and at least one team column
+            pbp_tables = []
+            for idx, table in enumerate(tables):
+                table.columns = table.columns.str.strip()
+                if any('time' in str(col).lower() for col in table.columns):
+                    pbp_tables.append((idx, table))
+            st.write(f"Detected possible play-by-play tables at indices: {[idx for idx, _ in pbp_tables]}")
+            table_indices = [idx for idx, _ in pbp_tables]
+            if not pbp_tables:
+                st.warning("No play-by-play tables detected automatically. Please try selecting manually.")
+                for i, table in enumerate(tables):
+                    st.write(f"Table {i}:")
+                    st.dataframe(table.head())
+                table_indices = list(range(len(tables)))
 
-            # --- Basic analysis example ---
-            st.write("## Play-By-Play Analysis")
-            st.write(f"Total rows (plays): {len(pbp_df)}")
-            if "Time" in pbp_df.columns:
-                st.write(f"Game duration covered: {pbp_df['Time'].min()} to {pbp_df['Time'].max()}")
+            # Let user select first and second half (or both) play-by-play tables
+            idx1 = st.selectbox("First half play-by-play table index:", options=table_indices, index=0)
+            idx2 = st.selectbox("Second half play-by-play table index:", options=table_indices, index=1 if len(table_indices) > 1 else 0)
 
-            # Count actions if a column named "Description" exists
-            if "Description" in pbp_df.columns:
-                st.write("### Top 10 Most Frequent Play Types (by keyword in Description)")
-                keywords = ['three', 'layup', 'jumper', 'free throw', 'foul', 'turnover', 'rebound', 'timeout']
-                stats = {k: pbp_df['Description'].str.lower().str.contains(k).sum() for k in keywords}
-                st.write(
-                    pd.DataFrame(list(stats.items()), columns=["Play Type", "Count"])
-                    .sort_values("Count", ascending=False)
+            first_half_play_by_play = tables[idx1].copy()
+            second_half_play_by_play = tables[idx2].copy()
+
+            columns_to_drop = ["Play Team Indicator", "Game Score", "Team Indicator", "Play"]
+            for df in [first_half_play_by_play, second_half_play_by_play]:
+                df.drop(columns=columns_to_drop, errors='ignore', inplace=True)
+                df.columns = df.columns.str.strip()
+                # Standardize time column name
+                time_col = None
+                for col in df.columns:
+                    if 'time' in col.lower():
+                        time_col = col
+                        break
+                if time_col and time_col != 'Time Remaining':
+                    df.rename(columns={time_col: 'Time Remaining'}, inplace=True)
+                df['Time Remaining'] = df['Time Remaining'].replace('--', np.nan)
+                df['Time Remaining'] = df['Time Remaining'].ffill()
+                df['Time Remaining'] = df['Time Remaining'].astype(str).apply(lambda x: x.strip())
+
+            def pad_time(t):
+                if pd.isna(t): return t
+                parts = t.split(":")
+                if len(parts) == 2:
+                    m, s = parts
+                elif len(parts) == 1:
+                    m, s = parts[0], "00"
+                else:
+                    return t
+                return f"{int(m):02d}:{int(s):02d}"
+
+            first_half_play_by_play['Time Remaining'] = first_half_play_by_play['Time Remaining'].apply(pad_time)
+            second_half_play_by_play['Time Remaining'] = second_half_play_by_play['Time Remaining'].apply(pad_time)
+
+            # Identify team columns (likely the 2 columns after 'Time Remaining')
+            def guess_team_columns(df):
+                cols = list(df.columns)
+                if 'Time Remaining' in cols:
+                    idx = cols.index('Time Remaining')
+                    # Find next two non-time columns
+                    team_cols = []
+                    for c in cols[idx+1:]:
+                        if 'time' not in c.lower():
+                            team_cols.append(c)
+                        if len(team_cols) == 2:
+                            break
+                    return team_cols if len(team_cols) == 2 else cols[-2:]
+                return cols[-2:]
+
+            team_cols = guess_team_columns(first_half_play_by_play)
+            team_names = [c.strip().upper() for c in team_cols]
+            st.info(f"Detected teams: {team_names}")
+
+            # For first half: add 20 minutes (so 20:00 → 40:00, 0:00 → 20:00)
+            def first_half_game_time_seconds(time_str):
+                if pd.isna(time_str):
+                    return None
+                m, s = map(int, time_str.split(":"))
+                game_m = m + 20  # shift to 40:00-20:00
+                return game_m * 60 + s
+
+            # For second half: use as is (20:00 → 20:00, 0:00 → 0:00)
+            def second_half_game_time_seconds(time_str):
+                if pd.isna(time_str):
+                    return None
+                m, s = map(int, time_str.split(":"))
+                return m * 60 + s
+
+            first_half_play_by_play['game_time_seconds'] = first_half_play_by_play['Time Remaining'].apply(first_half_game_time_seconds)
+            second_half_play_by_play['game_time_seconds'] = second_half_play_by_play['Time Remaining'].apply(second_half_game_time_seconds)
+
+            # Extract plays
+            def extract_plays(df, team_col, team_name):
+                rows = []
+                for idx, row in df.iterrows():
+                    play_text = str(row.get(team_col, "")).upper()
+                    time = row['Time Remaining']
+                    game_time = row['game_time_seconds']
+                    for category in ['MISS', 'REBOUND', 'ASSIST', 'TURNOVER']:
+                        if category == 'MISS':
+                            if 'MISS FT' in play_text:
+                                rows.append({'team': team_name, 'time': time, 'game_time_seconds': game_time, 'play_type': 'MISS', 'value': 0.5})
+                            elif 'MISS' in play_text:
+                                rows.append({'team': team_name, 'time': time, 'game_time_seconds': game_time, 'play_type': 'MISS', 'value': 1})
+                        elif category in play_text:
+                            rows.append({'team': team_name, 'time': time, 'game_time_seconds': game_time, 'play_type': category, 'value': 1})
+                return rows
+
+            team1, team2 = team_cols
+            ap_rows_1 = extract_plays(first_half_play_by_play, team1, team_names[0])
+            ut_rows_1 = extract_plays(first_half_play_by_play, team2, team_names[1])
+            ap_rows_2 = extract_plays(second_half_play_by_play, team1, team_names[0])
+            ut_rows_2 = extract_plays(second_half_play_by_play, team2, team_names[1])
+
+            # Combine all plays
+            events = pd.DataFrame(ap_rows_1 + ut_rows_1 + ap_rows_2 + ut_rows_2)
+            events = events.dropna(subset=['game_time_seconds'])
+            events['game_time_seconds'] = events['game_time_seconds'].astype(int)
+            events = events.sort_values('game_time_seconds', ascending=False).reset_index(drop=True)
+
+            def seconds_to_mmss(seconds):
+                m, s = divmod(int(seconds), 60)
+                return f"{m:02d}:{s:02d}"
+
+            play_types = ['MISS', 'REBOUND', 'ASSIST', 'TURNOVER']
+            teams = team_names
+            time_points = sorted(events['game_time_seconds'].unique(), reverse=True)
+            time_labels = [seconds_to_mmss(t) for t in time_points]
+
+            st.markdown("### Interactive Cumulative Bar Chart")
+            play_type = st.selectbox("Select play type to visualize:", play_types)
+
+            frames = []
+            for t in time_points:
+                subset = events[(events['game_time_seconds'] >= t) & (events['play_type'] == play_type)]
+                summary = (
+                    subset.groupby('team')['value']
+                    .sum()
+                    .reindex(teams, fill_value=0)
+                    .reset_index()
                 )
+                summary['game_time_seconds'] = t
+                frames.append(summary)
+            cum_df = pd.concat(frames, ignore_index=True)
+
+            y_initial = [
+                cum_df[(cum_df['team'] == team) & (cum_df['game_time_seconds'] == time_points[0])]['value'].values[0]
+                for team in teams
+            ]
+
+            fig = go.Figure(
+                data=[
+                    go.Bar(
+                        x=teams,
+                        y=y_initial,
+                        marker=dict(line=dict(width=1)),
+                    )
+                ]
+            )
+
+            steps = []
+            for idx, t in enumerate(time_points):
+                y_step = [
+                    cum_df[(cum_df['team'] == team) & (cum_df['game_time_seconds'] == t)]['value'].values[0]
+                    for team in teams
+                ]
+                step = dict(
+                    method="update",
+                    args=[{"y": [y_step]}],
+                    label=time_labels[idx]
+                )
+                steps.append(step)
+
+            sliders = [dict(
+                active=0,
+                currentvalue={"prefix": "Time: "},
+                pad={"t": 50},
+                steps=steps
+            )]
+
+            fig.update_layout(
+                sliders=sliders,
+                barmode='group',
+                title=f"Cumulative {play_type} Count Over Time (Full Game)",
+                xaxis_title="Team",
+                yaxis_title=f"Cumulative {play_type} Count",
+                xaxis=dict(
+                    tickmode='array',
+                    tickvals=teams,
+                )
+            )
+
+            st.plotly_chart(fig, use_container_width=True)
 
         except Exception as e:
             st.error(f"Error reading or processing the URL: {e}")
