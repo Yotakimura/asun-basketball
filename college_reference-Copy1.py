@@ -286,8 +286,8 @@ with tab3:
             df[['BLK', 'Opp BLK']] = df['BLK'].str.split('/', expand=True).astype(int)
             df[['STL', 'Opp STL']] = df['STL'].str.split('/', expand=True).astype(int)
             df[['FT PCT', 'Opp FT PCT']] = df['FT PCT'].str.split('-', expand=True).astype(float)
-            df[['FG PCT', 'Opp FG PCT']] = df['FG PCT'].str.split('-', expand=True).astype(float)
-            df[['3FG PCT', 'Opp 3FG PCT']] = df['3FG PCT'].str.split('-', expand=True).astype(float)
+            df[['FG PCT', 'Opp FG PCT']] = df['FG PCT'].str.split('/', expand=True).astype(float)
+            df[['3FG PCT', 'Opp 3FG PCT']] = df['3FG PCT'].str.split('/', expand=True).astype(float)
                     
             fg_split = df['FG'].str.split('/', expand=True)
             df['FGM'] = fg_split[0].str.split('-', expand=True)[0].astype(int)
