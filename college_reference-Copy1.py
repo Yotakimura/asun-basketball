@@ -301,12 +301,12 @@ with tab3:
                 'Opp FG PCT\t': 'Opp FG PCT'
             })
             if '3FG PCT' in df.columns and 'Opp 3FG PCT' in df.columns:
-            # If columns exist and are slashed, split; else, just convert
-            if df['3FG PCT'].str.contains('/').any():
-                df[['3FG PCT', 'Opp 3FG PCT']] = df['3FG PCT'].str.split('/', expand=True).astype(float)
-            else:
-                df['3FG PCT'] = df['3FG PCT'].astype(float)
-                df['Opp 3FG PCT'] = df['Opp 3FG PCT'].astype(float)
+                # If columns exist and are slashed, split; else, just convert
+                if df['3FG PCT'].str.contains('/').any():
+                    df[['3FG PCT', 'Opp 3FG PCT']] = df['3FG PCT'].str.split('/', expand=True).astype(float)
+                else:
+                    df['3FG PCT'] = df['3FG PCT'].astype(float)
+                    df['Opp 3FG PCT'] = df['Opp 3FG PCT'].astype(float)
             if 'FG PCT' in df.columns and 'Opp FG PCT' in df.columns:
                 if df['FG PCT'].str.contains('/').any():
                     df[['FG PCT', 'Opp FG PCT']] = df['FG PCT'].str.split('/', expand=True).astype(float)
