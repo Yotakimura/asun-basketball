@@ -419,7 +419,7 @@ with tab4:
             # Guess play-by-play tables: look for those with both 'Time' and at least one team column
             pbp_tables = []
             for idx, table in enumerate(tables):
-                table.columns = table.columns.str.strip()
+                table.columns = table.columns.astype(str).str.strip()
                 if any('time' in str(col).lower() for col in table.columns):
                     pbp_tables.append((idx, table))
             st.write(f"Detected possible play-by-play tables at indices: {[idx for idx, _ in pbp_tables]}")
@@ -441,11 +441,11 @@ with tab4:
             columns_to_drop = ["Play Team Indicator", "Game Score", "Team Indicator", "Play"]
             for df in [first_half_play_by_play, second_half_play_by_play]:
                 df.drop(columns=columns_to_drop, errors='ignore', inplace=True)
-                df.columns = df.columns.str.strip()
+                df.columns = df.columns.astype(str).str.strip()
                 # Standardize time column name
                 time_col = None
                 for col in df.columns:
-                    if 'time' in col.lower():
+                    if 'time' in str(col).lower():
                         time_col = col
                         break
                 if time_col and time_col != 'Time Remaining':
@@ -456,7 +456,7 @@ with tab4:
 
             def pad_time(t):
                 if pd.isna(t): return t
-                parts = t.split(":")
+                parts = str(t).split(":")
                 if len(parts) == 2:
                     m, s = parts
                 elif len(parts) == 1:
@@ -476,7 +476,7 @@ with tab4:
                     # Find next two non-time columns
                     team_cols = []
                     for c in cols[idx+1:]:
-                        if 'time' not in c.lower():
+                        if 'time' not in str(c).lower():
                             team_cols.append(c)
                         if len(team_cols) == 2:
                             break
@@ -484,14 +484,14 @@ with tab4:
                 return cols[-2:]
 
             team_cols = guess_team_columns(first_half_play_by_play)
-            team_names = [c.strip().upper() for c in team_cols]
+            team_names = [str(c).strip().upper() for c in team_cols]
             st.info(f"Detected teams: {team_names}")
 
             # For first half: add 20 minutes (so 20:00 → 40:00, 0:00 → 20:00)
             def first_half_game_time_seconds(time_str):
                 if pd.isna(time_str):
                     return None
-                m, s = map(int, time_str.split(":"))
+                m, s = map(int, str(time_str).split(":"))
                 game_m = m + 20  # shift to 40:00-20:00
                 return game_m * 60 + s
 
@@ -499,7 +499,7 @@ with tab4:
             def second_half_game_time_seconds(time_str):
                 if pd.isna(time_str):
                     return None
-                m, s = map(int, time_str.split(":"))
+                m, s = map(int, str(time_str).split(":"))
                 return m * 60 + s
 
             first_half_play_by_play['game_time_seconds'] = first_half_play_by_play['Time Remaining'].apply(first_half_game_time_seconds)
