@@ -278,3 +278,24 @@ with tab2:
     plt.tight_layout()
     st.pyplot(fig2)
     plt.close(fig2)
+
+
+with tab3:
+    st.markdown("### W/L Stats Comparison")
+    # List of teams for vertical tabs
+    wl_teams = [
+        "Lipscomb",
+        "North Alabama",
+        "FGCU",
+        "Jacksonville",
+        "EKU",
+        "Queens",
+        "North Florida",
+        "Austin Peay",
+        "Stetson",
+        "Central Arkansas",
+        "Bellarmine"
+    ]
+    selected_team = st.sidebar.radio("Select a Team", wl_teams, label_visibility='collapsed')
+    # Streamlit as of May 2025 does not have official vertical tabs,
+    # but this approach with a sidebar radio is commonly used for "vertical tabs"
