@@ -395,12 +395,19 @@ with tab3:
                     if c in comparison_display.columns:
                         comparison_display.loc[pct_col, c] = add_percent(comparison_display.loc[pct_col, c])
 
+
+        def round_if_number(val):
+            if isinstance(val, float):
+                return round(val, 2)
+            return val
+        comparison_display = comparison_display.applymap(round_if_number)
         st.dataframe(comparison_display)
 
         
-        
-        win_val = comparison.loc[selected_stat, "Win Average"]
-        lose_val = comparison.loc[selected_stat, "Lose Average"]
+        comparison_stats = comparison.index.tolist()
+        selected_stat = st.selectbox("Select stat to visualize:", comparison_stats)
+        win_val = float(comparison.loc[selected_stat, "Win Average"])
+        lose_val = float(comparison.loc[selected_stat, "Lose Average"])
     
         fig_bar = go.Figure(
             data=[
