@@ -550,70 +550,84 @@ with tab4:
             time_points = sorted(events['game_time_seconds'].unique(), reverse=True)
             time_labels = [seconds_to_mmss(t) for t in time_points]
 
-            st.markdown("### Interactive Cumulative Bar Chart")
-            play_type = st.selectbox("Select play type to visualize:", play_types)
+            st.markdown("### Interactive Cumulative Line Chart")
+play_type = st.selectbox("Select play type to visualize:", play_types)
 
-            frames = []
-            for t in time_points:
-                subset = events[(events['game_time_seconds'] >= t) & (events['play_type'] == play_type)]
-                summary = (
-                    subset.groupby('team')['value']
-                    .sum()
-                    .reindex(teams, fill_value=0)
-                    .reset_index()
-                )
-                summary['game_time_seconds'] = t
-                frames.append(summary)
-            cum_df = pd.concat(frames, ignore_index=True)
+# Compute cumulative counts for each team at each time point
+team_lines = {team: [] for team in teams}
+for t in time_points:
+    subset = events[(events['game_time_seconds'] >= t) & (events['play_type'] == play_type)]
+    for team in teams:
+        val = subset[subset['team'] == team]['value'].sum()
+        team_lines[team].append(val)
 
-            y_initial = [
-                cum_df[(cum_df['team'] == team) & (cum_df['game_time_seconds'] == time_points[0])]['value'].values[0]
-                for team in teams
-            ]
+# Initial line for the first time point
+fig = go.Figure()
+for team in teams:
+    fig.add_trace(go.Scatter(
+        x=[time_labels[0]],
+        y=[team_lines[team][0]],
+        mode='lines+markers',
+        name=team,
+    ))
 
-            fig = go.Figure(
-                data=[
-                    go.Bar(
-                        x=teams,
-                        y=y_initial,
-                        marker=dict(line=dict(width=1)),
-                    )
-                ]
-            )
+# Create frames for each time point (building up the line)
+frames = []
+for idx, t_label in enumerate(time_labels):
+    frame_data = []
+    for team in teams:
+        frame_data.append(go.Scatter(
+            x=time_labels[:idx+1],
+            y=team_lines[team][:idx+1],
+            mode='lines+markers',
+            name=team
+        ))
+    frames.append(go.Frame(data=frame_data, name=str(idx)))
 
-            steps = []
-            for idx, t in enumerate(time_points):
-                y_step = [
-                    cum_df[(cum_df['team'] == team) & (cum_df['game_time_seconds'] == t)]['value'].values[0]
-                    for team in teams
-                ]
-                step = dict(
-                    method="update",
-                    args=[{"y": [y_step]}],
-                    label=time_labels[idx]
-                )
-                steps.append(step)
+# Steps for the slider
+steps = []
+for i, t_label in enumerate(time_labels):
+    step = dict(
+        method='animate',
+        args=[
+            [str(i)],
+            {"mode": "immediate", "frame": {"duration": 0, "redraw": True},
+             "transition": {"duration": 0}}
+        ],
+        label=t_label
+    )
+    steps.append(step)
 
-            sliders = [dict(
-                active=0,
-                currentvalue={"prefix": "Time: "},
-                pad={"t": 50},
-                steps=steps
-            )]
+sliders = [dict(
+    steps=steps,
+    active=0,
+    currentvalue={"prefix": "Time: "},
+    pad={"t": 50}
+)]
 
-            fig.update_layout(
-                sliders=sliders,
-                barmode='group',
-                title=f"Cumulative {play_type} Count Over Time (Full Game)",
-                xaxis_title="Team",
-                yaxis_title=f"Cumulative {play_type} Count",
-                xaxis=dict(
-                    tickmode='array',
-                    tickvals=teams,
-                )
-            )
+fig.update(frames=frames)
+fig.update_layout(
+    sliders=sliders,
+    updatemenus=[dict(
+        type='buttons',
+        showactive=False,
+        buttons=[
+            dict(label='Play',
+                 method='animate',
+                 args=[None, {"frame": {"duration": 50, "redraw": True},
+                              "fromcurrent": True, "transition": {"duration": 0}}]),
+            dict(label='Pause',
+                 method='animate',
+                 args=[[None], {"frame": {"duration": 0, "redraw": False},
+                                "mode": "immediate",
+                                "transition": {"duration": 0}}])
+        ],
+        x=1.05, y=1.15
+    )],
+    title=f"Cumulative {play_type} Count Over Time (Interactive Line Chart)",
+    xaxis_title="Game Time (MM:SS)",
+    yaxis_title=f"Cumulative {play_type} Count",
+    xaxis=dict(categoryorder='array', categoryarray=time_labels)
+)
 
-            st.plotly_chart(fig, use_container_width=True)
-
-        except Exception as e:
-            st.error(f"Error reading or processing the URL: {e}")
+st.plotly_chart(fig, use_container_width=True)
