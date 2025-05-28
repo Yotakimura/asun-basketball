@@ -372,14 +372,23 @@ with tab3:
     
         fig_bar = go.Figure(
             data=[
-                go.Bar(name="Win Average", x=["Win"], y=[win_val]),
-                go.Bar(name="Lose Average", x=["Lose"], y=[lose_val]),
+                go.Bar(name="Win Average", x=["Win"], y=[win_val], marker_color='seagreen', text=[f"{win_val:.2f}"], textposition='outside'),
+                go.Bar(name="Lose Average", x=["Lose"], y=[lose_val], marker_color='crimson', text=[f"{lose_val:.2f}"], textposition='outside'),
             ]
         )
         fig_bar.update_layout(
             title=f"{selected_stat} (Win vs Lose)",
             yaxis_title=selected_stat,
             xaxis_title="Game Result",
-            barmode='group'
+            barmode='group',
+            bargap=0.4
+        )
+        diff = win_val - lose_val
+        fig_bar.add_annotation(
+            x=0.5, y=max(win_val, lose_val),
+            text=f"Difference: {diff:.2f}",
+            showarrow=False,
+            yshift=20,
+            font=dict(size=14, color="black")
         )
         st.plotly_chart(fig_bar, use_container_width=True)
