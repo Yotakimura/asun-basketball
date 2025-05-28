@@ -229,7 +229,8 @@ st.markdown(
 
 st.title("ASUN Basketball Insights")
 
-tab1, tab2 = st.tabs(["Radar Chart", "Heatmap"])
+tab1, tab2, tab3 = st.tabs(["Radar Chart", "Heatmap", "W/L Stats Comparison"])
+
 
 with tab1:
     st.markdown("""
