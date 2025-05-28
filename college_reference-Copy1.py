@@ -309,7 +309,7 @@ with tab3:
             df['FTA'] = fg_split[0].str.split('-', expand=True)[1].astype(int)
             df['Opp FTM'] = fg_split[1].str.split('-', expand=True)[0].astype(int)
             df['Opp FTA'] = fg_split[1].str.split('-', expand=True)[1].astype(int)
-            df.drop(columns=['FT', '3FG PCT', 'FG PCT'], inplace=True)
+            df.drop(columns=['FT'], inplace=True)
             win_df = df[df['MAR'] > 0].copy()
             lose_df = df[df['MAR'] < 0].copy()
             win_avg = win_df.mean(numeric_only=True)
@@ -377,6 +377,18 @@ with tab3:
                 return round(val, 2)
             return val
         comparison_display = comparison_display.applymap(round_if_number)
+
+        st.markdown("""
+            <style>
+            .stDataFrame thead tr th:first-child,
+            .stDataFrame tbody tr th {
+                min-width: 180px;
+                max-width: 400px;
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+            </style>
+            """, unsafe_allow_html=True)
 
         st.dataframe(comparison_display)
 
