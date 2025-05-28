@@ -43,16 +43,9 @@ asun.columns = [
 asun.loc[:, 'School'] = asun['School'] + ' 2024'
 
 
-# In[9]:
-
-
-# In[12]:
-
 
 asun_2024 = asun
 
-
-# In[14]:
 
 
 url = 'https://www.sports-reference.com/cbb/conferences/atlantic-sun/men/2024.html'
