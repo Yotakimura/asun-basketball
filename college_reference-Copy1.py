@@ -416,7 +416,7 @@ with tab4:
             tables = pd.read_html(url)
             st.success(f"Loaded {len(tables)} tables from the URL.")
 
-            # Guess play-by-play tables: look for those with both 'Time' and at least one team column
+            # Guess play-by-play tables: look for those with 'Time' in the columns.
             pbp_tables = []
             for idx, table in enumerate(tables):
                 table.columns = table.columns.astype(str).str.strip()
@@ -468,24 +468,30 @@ with tab4:
             first_half_play_by_play['Time Remaining'] = first_half_play_by_play['Time Remaining'].apply(pad_time)
             second_half_play_by_play['Time Remaining'] = second_half_play_by_play['Time Remaining'].apply(pad_time)
 
-            # Identify team columns (likely the 2 columns after 'Time Remaining')
+            # Improved team column guessing: skip score columns, select columns with play text
             def guess_team_columns(df):
-                cols = list(df.columns)
-                if 'Time Remaining' in cols:
-                    idx = cols.index('Time Remaining')
-                    # Find next two non-time columns
-                    team_cols = []
-                    for c in cols[idx+1:]:
-                        if 'time' not in str(c).lower():
-                            team_cols.append(c)
-                        if len(team_cols) == 2:
-                            break
-                    return team_cols if len(team_cols) == 2 else cols[-2:]
-                return cols[-2:]
+                exclude_cols = ['TIME REMAINING', 'AWAY TEAM SCORE', 'HOME TEAM SCORE']
+                possible_team_cols = []
+                for col in df.columns:
+                    if col.upper() in exclude_cols:
+                        continue
+                    # check if any value in the column is a non-null, non-numeric string
+                    sample_vals = df[col].dropna().astype(str).head(10)
+                    if any(any(c.isalpha() for c in val) and not val.replace('.', '', 1).isdigit() for val in sample_vals):
+                        possible_team_cols.append(col)
+                return possible_team_cols[:2]  # return first two found
 
             team_cols = guess_team_columns(first_half_play_by_play)
-            team_names = [str(c).strip().upper() for c in team_cols]
-            st.info(f"Detected teams: {team_names}")
+            if len(team_cols) < 2:
+                st.warning("Couldn't confidently detect both team columns. Please select them manually.")
+                candidate_cols = [c for c in first_half_play_by_play.columns if c.upper() not in ['TIME REMAINING', 'AWAY TEAM SCORE', 'HOME TEAM SCORE']]
+                team_cols = st.multiselect("Select the two team columns:", options=candidate_cols, default=None, max_selections=2)
+            if len(team_cols) == 2:
+                team_names = [str(c).strip().upper() for c in team_cols]
+                st.info(f"Detected teams: {team_names}")
+            else:
+                st.error("Could not detect two team columns. Please check your table.")
+                st.stop()
 
             # For first half: add 20 minutes (so 20:00 → 40:00, 0:00 → 20:00)
             def first_half_game_time_seconds(time_str):
@@ -523,10 +529,11 @@ with tab4:
                 return rows
 
             team1, team2 = team_cols
-            ap_rows_1 = extract_plays(first_half_play_by_play, team1, team_names[0])
-            ut_rows_1 = extract_plays(first_half_play_by_play, team2, team_names[1])
-            ap_rows_2 = extract_plays(second_half_play_by_play, team1, team_names[0])
-            ut_rows_2 = extract_plays(second_half_play_by_play, team2, team_names[1])
+            teamname1, teamname2 = team_names
+            ap_rows_1 = extract_plays(first_half_play_by_play, team1, teamname1)
+            ut_rows_1 = extract_plays(first_half_play_by_play, team2, teamname2)
+            ap_rows_2 = extract_plays(second_half_play_by_play, team1, teamname1)
+            ut_rows_2 = extract_plays(second_half_play_by_play, team2, teamname2)
 
             # Combine all plays
             events = pd.DataFrame(ap_rows_1 + ut_rows_1 + ap_rows_2 + ut_rows_2)
