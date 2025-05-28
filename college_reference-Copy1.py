@@ -336,30 +336,30 @@ with tab3:
         except Exception as e:
             return f"Error processing stats: {e}"
 
-# Team URLs and (guessed) stat table indices
-team_urls = {
-    "Austin Peay": ("https://letsgopeay.com/sports/mens-basketball/stats/2024-25", 7),
-    "Lipscomb": ("https://lipscombsports.com/sports/mens-basketball/stats", 7),
-    "North Alabama": ("https://roarlions.com/sports/mens-basketball/stats/2024-25", 7),
-    "FGCU": ("https://fgcuathletics.com/sports/mens-basketball/stats", 7),
-    "Jacksonville": ("https://judolphins.com/sports/mens-basketball/stats/2024-25", 7),
-    "EKU": ("https://ekusports.com/sports/mens-basketball/stats/2024-25", 7),
-    "Queens": ("https://queensathletics.com/sports/mens-basketball/stats/2024-2025", 7),
-    "North Florida": ("https://unfospreys.com/sports/mens-basketball/stats/2024-25", 7),
-    "Stetson": ("https://gohatters.com/sports/mens-basketball/stats", 7),
-    "Central Arkansas": ("https://ucasports.com/sports/mens-basketball/stats/2024-25", 7),
-    "Bellarmine": ("https://athletics.bellarmine.edu/sports/mens-basketball/stats", 7),
-}
-
-st.markdown("### W/L Stats Comparison")
-
-team_list = list(team_urls.keys())
-selected_team = st.radio("Select a Team", team_list, index=0)
-
-url, table_idx = team_urls[selected_team]
-comparison = fetch_and_process_team_stats(url, table_idx)
-
-if isinstance(comparison, str):
-    st.error(comparison)
-else:
-    st.dataframe(comparison)
+    # Team URLs and (guessed) stat table indices
+    team_urls = {
+        "Austin Peay": ("https://letsgopeay.com/sports/mens-basketball/stats/2024-25", 7),
+        "Lipscomb": ("https://lipscombsports.com/sports/mens-basketball/stats", 7),
+        "North Alabama": ("https://roarlions.com/sports/mens-basketball/stats/2024-25", 7),
+        "FGCU": ("https://fgcuathletics.com/sports/mens-basketball/stats", 7),
+        "Jacksonville": ("https://judolphins.com/sports/mens-basketball/stats/2024-25", 7),
+        "EKU": ("https://ekusports.com/sports/mens-basketball/stats/2024-25", 7),
+        "Queens": ("https://queensathletics.com/sports/mens-basketball/stats/2024-2025", 7),
+        "North Florida": ("https://unfospreys.com/sports/mens-basketball/stats/2024-25", 7),
+        "Stetson": ("https://gohatters.com/sports/mens-basketball/stats", 7),
+        "Central Arkansas": ("https://ucasports.com/sports/mens-basketball/stats/2024-25", 7),
+        "Bellarmine": ("https://athletics.bellarmine.edu/sports/mens-basketball/stats", 7),
+    }
+    
+    st.markdown("### W/L Stats Comparison")
+    
+    team_list = list(team_urls.keys())
+    selected_team = st.radio("Select a Team", team_list, index=0)
+    
+    url, table_idx = team_urls[selected_team]
+    comparison = fetch_and_process_team_stats(url, table_idx)
+    
+    if isinstance(comparison, str):
+        st.error(comparison)
+    else:
+        st.dataframe(comparison)
