@@ -363,7 +363,6 @@ with tab3:
         st.error(comparison)
     else:
         st.dataframe(comparison)
-        if not isinstance(comparison, str):
         # Only show selectbox if comparison table is valid
         comparison_stats = comparison.index.tolist()
         selected_stat = st.selectbox("Select stat to visualize:", comparison_stats)
