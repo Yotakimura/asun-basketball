@@ -281,21 +281,84 @@ with tab2:
 
 
 with tab3:
-    st.markdown("### W/L Stats Comparison")
-    # List of teams for vertical tabs
-    wl_teams = [
-        "Lipscomb",
-        "North Alabama",
-        "FGCU",
-        "Jacksonville",
-        "EKU",
-        "Queens",
-        "North Florida",
-        "Austin Peay",
-        "Stetson",
-        "Central Arkansas",
-        "Bellarmine"
-    ]
-    selected_team = st.sidebar.radio("Select a Team", wl_teams, label_visibility='collapsed')
-    # Streamlit as of May 2025 does not have official vertical tabs,
-    # but this approach with a sidebar radio is commonly used for "vertical tabs"
+    def fetch_and_process_team_stats(url, table_idx):
+    try:
+        tables = pd.read_html(url)
+        df = tables[table_idx]
+        # The Austin Peay logic here—adapt column names if needed for each site!
+        df[['Score', 'Opp Score']] = df['Score'].str.split('-', expand=True).astype(int)
+        df[['PF', 'Opp PF']] = df['PF'].str.split('/', expand=True).astype(int)
+        df[['TO', 'Opp TO']] = df['TO'].str.split('/', expand=True).astype(int)
+        df[['BLK', 'Opp BLK']] = df['BLK'].str.split('/', expand=True).astype(int)
+        df[['STL', 'Opp STL']] = df['STL'].str.split('/', expand=True).astype(int)
+        df[['FT PCT', 'Opp FT PCT']] = df['FT PCT'].str.split('-', expand=True).astype(float)
+        # Clean column names with extra tabs (site-specific)
+        df = df.rename(columns={
+            '3FG PCT\t': '3FG PCT',
+            'Opp 3FG PCT\t': 'Opp 3FG PCT',
+            'FG PCT\t': 'FG PCT',
+            'Opp FG PCT\t': 'Opp FG PCT'
+        })
+        df[['3FG PCT', 'Opp 3FG PCT']] = df['3FG PCT'].str.split('/', expand=True).astype(float)
+        df[['FG PCT', 'Opp FG PCT']] = df['FG PCT'].str.split('/', expand=True).astype(float)
+        fg_split = df['FG'].str.split('/', expand=True)
+        df['FGM'] = fg_split[0].str.split('-', expand=True)[0].astype(int)
+        df['FGA'] = fg_split[0].str.split('-', expand=True)[1].astype(int)
+        df['Opp FGM'] = fg_split[1].str.split('-', expand=True)[0].astype(int)
+        df['Opp FGA'] = fg_split[1].str.split('-', expand=True)[1].astype(int)
+        fg_split = df['3FG'].str.split('/', expand=True)
+        df['3FGM'] = fg_split[0].str.split('-', expand=True)[0].astype(int)
+        df['3FGA'] = fg_split[0].str.split('-', expand=True)[1].astype(int)
+        df['Opp 3FGM'] = fg_split[1].str.split('-', expand=True)[0].astype(int)
+        df['Opp 3FGA'] = fg_split[1].str.split('-', expand=True)[1].astype(int)
+        df.drop(columns=['FG', '3FG'], inplace=True)
+        df[['AST', 'Opp AST']] = df['AST'].str.split('/', expand=True).astype(int)
+        rb_split = df['RB'].str.split(' ').str[0]
+        df['RB'] = rb_split.str.split('/').str[0].astype(int)
+        df['Opp RB'] = rb_split.str.split('/').str[1].astype(int)
+        fg_split = df['FT'].str.split('/', expand=True)
+        df['FTM'] = fg_split[0].str.split('-', expand=True)[0].astype(int)
+        df['FTA'] = fg_split[0].str.split('-', expand=True)[1].astype(int)
+        df['Opp FTM'] = fg_split[1].str.split('-', expand=True)[0].astype(int)
+        df['Opp FTA'] = fg_split[1].str.split('-', expand=True)[1].astype(int)
+        df.drop(columns=['FT', '3FG PCT', 'FG PCT'], inplace=True)
+        win_df = df[df['MAR'] > 0].copy()
+        lose_df = df[df['MAR'] < 0].copy()
+        win_avg = win_df.mean(numeric_only=True)
+        lose_avg = lose_df.mean(numeric_only=True)
+        comparison = pd.DataFrame({
+            'Win Average': win_avg,
+            'Lose Average': lose_avg
+        })
+        comparison['Difference'] = comparison['Win Average'] - comparison['Lose Average']
+        return comparison
+    except Exception as e:
+        return f"Error processing stats: {e}"
+
+# Team URLs and (guessed) stat table indices
+team_urls = {
+    "Austin Peay": ("https://letsgopeay.com/sports/mens-basketball/stats/2024-25", 7),
+    "Lipscomb": ("https://lipscombsports.com/sports/mens-basketball/stats", 7),
+    "North Alabama": ("https://roarlions.com/sports/mens-basketball/stats/2024-25", 7),
+    "FGCU": ("https://fgcuathletics.com/sports/mens-basketball/stats", 7),
+    "Jacksonville": ("https://judolphins.com/sports/mens-basketball/stats/2024-25", 7),
+    "EKU": ("https://ekusports.com/sports/mens-basketball/stats/2024-25", 7),
+    "Queens": ("https://queensathletics.com/sports/mens-basketball/stats/2024-2025", 7),
+    "North Florida": ("https://unfospreys.com/sports/mens-basketball/stats/2024-25", 7),
+    "Stetson": ("https://gohatters.com/sports/mens-basketball/stats", 7),
+    "Central Arkansas": ("https://ucasports.com/sports/mens-basketball/stats/2024-25", 7),
+    "Bellarmine": ("https://athletics.bellarmine.edu/sports/mens-basketball/stats", 7),
+}
+
+st.markdown("### W/L Stats Comparison")
+
+team_list = list(team_urls.keys())
+selected_team = st.radio("Select a Team", team_list, index=0)
+
+url, table_idx = team_urls[selected_team]
+comparison = fetch_and_process_team_stats(url, table_idx)
+
+if isinstance(comparison, str):
+    st.error(comparison)
+else:
+    st.dataframe(comparison)
