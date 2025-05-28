@@ -211,7 +211,12 @@ st.markdown(
 
 st.title("ASUN Basketball Insights")
 
-tab1, tab2, tab3 = st.tabs(["Radar Chart", "Heatmap", "W/L Stats Comparison"])
+tab1, tab2, tab3, tab4 = st.tabs([
+    "W/L Stats Comparison",
+    "Some Other Tab", 
+    "Another Tab", 
+    "Play-By-Play Analysis"
+])
 
 
 with tab1:
@@ -399,3 +404,46 @@ with tab3:
         )
         st.plotly_chart(fig_bar, use_container_width=True)
     
+
+
+with tab4:
+    st.header("Play-By-Play Analysis")
+    url = st.text_input("Enter the URL of the play-by-play stats page:")
+
+    if url:
+        try:
+            tables = pd.read_html(url)
+            st.write("Found the following tables on the page:")
+            for i, table in enumerate(tables):
+                st.write(f"Table {i}:")
+                st.dataframe(table.head())
+
+            table_idx = st.number_input(
+                "Select the table index that contains the play-by-play data:",
+                min_value=0,
+                max_value=len(tables) - 1,
+                value=0,
+                step=1,
+            )
+            pbp_df = tables[int(table_idx)]
+            st.write("### Selected Play-By-Play Data")
+            st.dataframe(pbp_df)
+
+            # --- Basic analysis example ---
+            st.write("## Play-By-Play Analysis")
+            st.write(f"Total rows (plays): {len(pbp_df)}")
+            if "Time" in pbp_df.columns:
+                st.write(f"Game duration covered: {pbp_df['Time'].min()} to {pbp_df['Time'].max()}")
+
+            # Count actions if a column named "Description" exists
+            if "Description" in pbp_df.columns:
+                st.write("### Top 10 Most Frequent Play Types (by keyword in Description)")
+                keywords = ['three', 'layup', 'jumper', 'free throw', 'foul', 'turnover', 'rebound', 'timeout']
+                stats = {k: pbp_df['Description'].str.lower().str.contains(k).sum() for k in keywords}
+                st.write(
+                    pd.DataFrame(list(stats.items()), columns=["Play Type", "Count"])
+                    .sort_values("Count", ascending=False)
+                )
+
+        except Exception as e:
+            st.error(f"Error reading or processing the URL: {e}")
