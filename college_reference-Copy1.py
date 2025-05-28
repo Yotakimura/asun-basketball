@@ -282,58 +282,58 @@ with tab2:
 
 with tab3:
     def fetch_and_process_team_stats(url, table_idx):
-    try:
-        tables = pd.read_html(url)
-        df = tables[table_idx]
-        # The Austin Peay logic here—adapt column names if needed for each site!
-        df[['Score', 'Opp Score']] = df['Score'].str.split('-', expand=True).astype(int)
-        df[['PF', 'Opp PF']] = df['PF'].str.split('/', expand=True).astype(int)
-        df[['TO', 'Opp TO']] = df['TO'].str.split('/', expand=True).astype(int)
-        df[['BLK', 'Opp BLK']] = df['BLK'].str.split('/', expand=True).astype(int)
-        df[['STL', 'Opp STL']] = df['STL'].str.split('/', expand=True).astype(int)
-        df[['FT PCT', 'Opp FT PCT']] = df['FT PCT'].str.split('-', expand=True).astype(float)
-        # Clean column names with extra tabs (site-specific)
-        df = df.rename(columns={
-            '3FG PCT\t': '3FG PCT',
-            'Opp 3FG PCT\t': 'Opp 3FG PCT',
-            'FG PCT\t': 'FG PCT',
-            'Opp FG PCT\t': 'Opp FG PCT'
-        })
-        df[['3FG PCT', 'Opp 3FG PCT']] = df['3FG PCT'].str.split('/', expand=True).astype(float)
-        df[['FG PCT', 'Opp FG PCT']] = df['FG PCT'].str.split('/', expand=True).astype(float)
-        fg_split = df['FG'].str.split('/', expand=True)
-        df['FGM'] = fg_split[0].str.split('-', expand=True)[0].astype(int)
-        df['FGA'] = fg_split[0].str.split('-', expand=True)[1].astype(int)
-        df['Opp FGM'] = fg_split[1].str.split('-', expand=True)[0].astype(int)
-        df['Opp FGA'] = fg_split[1].str.split('-', expand=True)[1].astype(int)
-        fg_split = df['3FG'].str.split('/', expand=True)
-        df['3FGM'] = fg_split[0].str.split('-', expand=True)[0].astype(int)
-        df['3FGA'] = fg_split[0].str.split('-', expand=True)[1].astype(int)
-        df['Opp 3FGM'] = fg_split[1].str.split('-', expand=True)[0].astype(int)
-        df['Opp 3FGA'] = fg_split[1].str.split('-', expand=True)[1].astype(int)
-        df.drop(columns=['FG', '3FG'], inplace=True)
-        df[['AST', 'Opp AST']] = df['AST'].str.split('/', expand=True).astype(int)
-        rb_split = df['RB'].str.split(' ').str[0]
-        df['RB'] = rb_split.str.split('/').str[0].astype(int)
-        df['Opp RB'] = rb_split.str.split('/').str[1].astype(int)
-        fg_split = df['FT'].str.split('/', expand=True)
-        df['FTM'] = fg_split[0].str.split('-', expand=True)[0].astype(int)
-        df['FTA'] = fg_split[0].str.split('-', expand=True)[1].astype(int)
-        df['Opp FTM'] = fg_split[1].str.split('-', expand=True)[0].astype(int)
-        df['Opp FTA'] = fg_split[1].str.split('-', expand=True)[1].astype(int)
-        df.drop(columns=['FT', '3FG PCT', 'FG PCT'], inplace=True)
-        win_df = df[df['MAR'] > 0].copy()
-        lose_df = df[df['MAR'] < 0].copy()
-        win_avg = win_df.mean(numeric_only=True)
-        lose_avg = lose_df.mean(numeric_only=True)
-        comparison = pd.DataFrame({
-            'Win Average': win_avg,
-            'Lose Average': lose_avg
-        })
-        comparison['Difference'] = comparison['Win Average'] - comparison['Lose Average']
-        return comparison
-    except Exception as e:
-        return f"Error processing stats: {e}"
+        try:
+            tables = pd.read_html(url)
+            df = tables[table_idx]
+            # The Austin Peay logic here—adapt column names if needed for each site!
+            df[['Score', 'Opp Score']] = df['Score'].str.split('-', expand=True).astype(int)
+            df[['PF', 'Opp PF']] = df['PF'].str.split('/', expand=True).astype(int)
+            df[['TO', 'Opp TO']] = df['TO'].str.split('/', expand=True).astype(int)
+            df[['BLK', 'Opp BLK']] = df['BLK'].str.split('/', expand=True).astype(int)
+            df[['STL', 'Opp STL']] = df['STL'].str.split('/', expand=True).astype(int)
+            df[['FT PCT', 'Opp FT PCT']] = df['FT PCT'].str.split('-', expand=True).astype(float)
+            # Clean column names with extra tabs (site-specific)
+            df = df.rename(columns={
+                '3FG PCT\t': '3FG PCT',
+                'Opp 3FG PCT\t': 'Opp 3FG PCT',
+                'FG PCT\t': 'FG PCT',
+                'Opp FG PCT\t': 'Opp FG PCT'
+            })
+            df[['3FG PCT', 'Opp 3FG PCT']] = df['3FG PCT'].str.split('/', expand=True).astype(float)
+            df[['FG PCT', 'Opp FG PCT']] = df['FG PCT'].str.split('/', expand=True).astype(float)
+            fg_split = df['FG'].str.split('/', expand=True)
+            df['FGM'] = fg_split[0].str.split('-', expand=True)[0].astype(int)
+            df['FGA'] = fg_split[0].str.split('-', expand=True)[1].astype(int)
+            df['Opp FGM'] = fg_split[1].str.split('-', expand=True)[0].astype(int)
+            df['Opp FGA'] = fg_split[1].str.split('-', expand=True)[1].astype(int)
+            fg_split = df['3FG'].str.split('/', expand=True)
+            df['3FGM'] = fg_split[0].str.split('-', expand=True)[0].astype(int)
+            df['3FGA'] = fg_split[0].str.split('-', expand=True)[1].astype(int)
+            df['Opp 3FGM'] = fg_split[1].str.split('-', expand=True)[0].astype(int)
+            df['Opp 3FGA'] = fg_split[1].str.split('-', expand=True)[1].astype(int)
+            df.drop(columns=['FG', '3FG'], inplace=True)
+            df[['AST', 'Opp AST']] = df['AST'].str.split('/', expand=True).astype(int)
+            rb_split = df['RB'].str.split(' ').str[0]
+            df['RB'] = rb_split.str.split('/').str[0].astype(int)
+            df['Opp RB'] = rb_split.str.split('/').str[1].astype(int)
+            fg_split = df['FT'].str.split('/', expand=True)
+            df['FTM'] = fg_split[0].str.split('-', expand=True)[0].astype(int)
+            df['FTA'] = fg_split[0].str.split('-', expand=True)[1].astype(int)
+            df['Opp FTM'] = fg_split[1].str.split('-', expand=True)[0].astype(int)
+            df['Opp FTA'] = fg_split[1].str.split('-', expand=True)[1].astype(int)
+            df.drop(columns=['FT', '3FG PCT', 'FG PCT'], inplace=True)
+            win_df = df[df['MAR'] > 0].copy()
+            lose_df = df[df['MAR'] < 0].copy()
+            win_avg = win_df.mean(numeric_only=True)
+            lose_avg = lose_df.mean(numeric_only=True)
+            comparison = pd.DataFrame({
+                'Win Average': win_avg,
+                'Lose Average': lose_avg
+            })
+            comparison['Difference'] = comparison['Win Average'] - comparison['Lose Average']
+            return comparison
+        except Exception as e:
+            return f"Error processing stats: {e}"
 
 # Team URLs and (guessed) stat table indices
 team_urls = {
