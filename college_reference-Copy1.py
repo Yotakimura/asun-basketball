@@ -286,34 +286,8 @@ with tab3:
             df[['BLK', 'Opp BLK']] = df['BLK'].str.split('/', expand=True).astype(int)
             df[['STL', 'Opp STL']] = df['STL'].str.split('/', expand=True).astype(int)
             df[['FT PCT', 'Opp FT PCT']] = df['FT PCT'].str.split('-', expand=True).astype(float)
-            # Clean column names with extra tabs (site-specific)
-            # Remove all leading/trailing whitespace from column names
-            df.columns = df.columns.str.strip()
-            
-            # Optionally, still rename if you expect alternate names (but not usually needed after strip)
-            df = df.rename(columns={
-                '3FG PCT': '3FG PCT',
-                'Opp 3FG PCT': 'Opp 3FG PCT',
-                'FG PCT': 'FG PCT',
-                'Opp FG PCT': 'Opp FG PCT'
-            })
-
-            # Check if 3FG PCT and Opp 3FG PCT exist and process
-            if '3FG PCT' in df.columns and 'Opp 3FG PCT' in df.columns:
-                # If columns exist and are slashed, split; else, just convert
-                if df['3FG PCT'].astype(str).str.contains('/').any():
-                    df[['3FG PCT', 'Opp 3FG PCT']] = df['3FG PCT'].str.split('/', expand=True).astype(float)
-                else:
-                    df['3FG PCT'] = df['3FG PCT'].astype(float)
-                    df['Opp 3FG PCT'] = df['Opp 3FG PCT'].astype(float)
-
-            # Same for FG PCT
-            if 'FG PCT' in df.columns and 'Opp FG PCT' in df.columns:
-                if df['FG PCT'].astype(str).str.contains('/').any():
-                    df[['FG PCT', 'Opp FG PCT']] = df['FG PCT'].str.split('/', expand=True).astype(float)
-                else:
-                    df['FG PCT'] = df['FG PCT'].astype(float)
-                    df['Opp FG PCT'] = df['Opp FG PCT'].astype(float)
+            df[['FG PCT', 'Opp FG PCT']] = df['FG PCT'].str.split('-', expand=True).astype(float)
+            df[['3FG PCT', 'Opp 3FG PCT']] = df['3FG PCT'].str.split('-', expand=True).astype(float)
                     
             fg_split = df['FG'].str.split('/', expand=True)
             df['FGM'] = fg_split[0].str.split('-', expand=True)[0].astype(int)
