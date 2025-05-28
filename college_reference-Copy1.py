@@ -94,13 +94,6 @@ combined_asun = combined_asun.sort_values(by='Conf %', ascending=False)
 # Display the result
 combined_asun.reset_index(drop=True, inplace=True)
 
-
-# In[20]:
-
-
-# In[22]:
-
-
 # Select only numeric columns
 numeric_cols = combined_asun.select_dtypes(include='number').columns
 
@@ -130,8 +123,6 @@ for col in numeric_cols:
     else:
         combined_asun_rescaled[col] = adjusted_scale(combined_asun_rescaled[col])
 
-
-# In[32]:
 
 
 import plotly.graph_objects as go
@@ -376,9 +367,7 @@ with tab3:
             return val
         comparison_display = comparison_display.applymap(round_if_number)
 
-
-        comparison_display.index = comparison_display.index.map(lambda x: x + "   ")
-        st.dataframe(comparison_display, width=1200)
+        st.dataframe(comparison_display)
 
         # -- Interactive bar chart --
         comparison_stats = comparison.index.tolist()
