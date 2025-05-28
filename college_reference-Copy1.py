@@ -363,3 +363,24 @@ with tab3:
         st.error(comparison)
     else:
         st.dataframe(comparison)
+        if not isinstance(comparison, str):
+        # Only show selectbox if comparison table is valid
+        comparison_stats = comparison.index.tolist()
+        selected_stat = st.selectbox("Select stat to visualize:", comparison_stats)
+    
+        win_val = comparison.loc[selected_stat, "Win Average"]
+        lose_val = comparison.loc[selected_stat, "Lose Average"]
+    
+        fig_bar = go.Figure(
+            data=[
+                go.Bar(name="Win Average", x=["Win"], y=[win_val]),
+                go.Bar(name="Lose Average", x=["Lose"], y=[lose_val]),
+            ]
+        )
+        fig_bar.update_layout(
+            title=f"{selected_stat} (Win vs Lose)",
+            yaxis_title=selected_stat,
+            xaxis_title="Game Result",
+            barmode='group'
+        )
+        st.plotly_chart(fig_bar, use_container_width=True)
