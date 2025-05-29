@@ -579,6 +579,19 @@ with tab4:
             time_labels = [seconds_to_mmss(t) for t in time_points]
 
             st.markdown("### Interactive Cumulative Line Chart")
+
+            st.markdown("""
+            **How to use this chart:**
+            
+            - Use the **time slider** below the chart to move forward or backward in game time.
+            - Press the **Play** button to animate the chart and watch how the play type (miss, rebound, assist, turnover, etc.) accumulates for each team as the game progresses.
+            - Press **Pause** to stop the animation at any moment.
+            - The chart shows a running total for your selected play type. For example, if you choose "Turnover," you'll see the cumulative number of turnovers for each team tick up as the game unfolds.
+            - **Tip:** Hover over the lines to see the exact count at any time point.
+            
+            This lets you visually track momentum and key swing moments for each stat throughout the game!
+            """)
+
             play_type = st.selectbox("Select play type to visualize:", play_types)
 
             # Compute cumulative counts for each team at each time point
