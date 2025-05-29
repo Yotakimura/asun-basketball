@@ -1,17 +1,12 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import requests
 
-# In[7]:
 
-
-url = 'https://www.sports-reference.com/cbb/conferences/atlantic-sun/men/2025.html'
-tables = pd.read_html(url)
+tables = pd.read_html("2024-25 Men's Atlantic Sun Conference Season Summary _ College Basketball at Sports-Reference.com.html")
+asun = tables[2]
 asun = tables[2]
 asun.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in asun.columns]
 asun['Conf %'] = asun['Conf._W'] / (asun['Conf._W'] + asun['Conf._L'])
@@ -46,7 +41,7 @@ asun_2024 = asun
 
 
 
-url = 'https://www.sports-reference.com/cbb/conferences/atlantic-sun/men/2024.html'
+url = '2023-24 Men's Atlantic Sun Conference Season Summary _ College Basketball at Sports-Reference.com.html'
 tables = pd.read_html(url)
 asun = tables[2]
 asun.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in asun.columns]
