@@ -5,4 +5,5 @@ matplotlib
 seaborn
 plotly
 lxml
+beautifulsoup4
 html5lib
