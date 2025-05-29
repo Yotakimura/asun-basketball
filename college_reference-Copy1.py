@@ -40,9 +40,7 @@ asun.loc[:, 'School'] = asun['School'] + ' 2024'
 asun_2024 = asun
 
 
-
-url = tables = pd.read_html("2023-24 Men's Atlantic Sun Conference Season Summary _ College Basketball at Sports-Reference.com.html")
-tables = pd.read_html(url)
+tables = pd.read_html("2023-24 Men's Atlantic Sun Conference Season Summary _ College Basketball at Sports-Reference.com.html")
 asun = tables[2]
 asun.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in asun.columns]
 asun['Conf %'] = asun['Conf._W'] / (asun['Conf._W'] + asun['Conf._L'])
