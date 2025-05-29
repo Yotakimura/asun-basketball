@@ -185,7 +185,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 # --- PASSWORD PROTECTION ---
-PASSWORD = "your_secret_password"  # <-- CHANGE THIS!
+PASSWORD = "apsu2025"  # <-- CHANGE THIS!
 
 def check_password():
     if "authenticated" not in st.session_state:
