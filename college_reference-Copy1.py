@@ -238,23 +238,28 @@ tab1, tab2, tab3, tab4= st.tabs([
 with tab1:
     st.markdown("""
     ### Understanding the Radar Chart
-    
+
     This radar chart visualizes and compares the performance of all ASUN Conference basketball teams across the 2023-24 and 2024-25 seasons.  
     Each statistical category is rescaled to a 1–10 range, where **higher values are better** (10 being best, 1 being worst).  
     For most stats, higher numbers are closer to 10. However, for **DRtg** (Defensive Rating), **TOV** (Turnovers), and **PF** (Personal Fouls), 
     **lower values are better**—so teams with lower numbers in these categories score closer to 10.
-    
+
     **How to use the chart:**  
-    - Each colored shape represents a team.  
-    - Hover over the lines to see each team's value for that stat.  
+    - Each colored shape represents a team.
+    - The **legend** (to the right or below the chart) lists all teams, **sorted by conference winning % from top to bottom**.
+    - **Click a team's name in the legend** to show or hide that team's line on the chart. You can select multiple teams this way.
+    - **Tip:** *Double-click* a team's name in the legend to show **only that team** (all other teams will be hidden). Double-click again to reset.
+    - Hover over the lines to see each team's value for that stat.
     - Compare the size and shape: a more "filled out" shape means stronger performance across more categories.
-    
+
     ---
     **Stat Glossary:**  
     - **ORtg (Offensive Rating):** Estimates the number of points a team scores per 100 possessions. Higher is better.
     - **DRtg (Defensive Rating):** Estimates the number of points a team allows per 100 possessions. Lower is better.
     """)
     st.plotly_chart(fig, use_container_width=True)
+
+
 
 with tab2:
     st.markdown("""
