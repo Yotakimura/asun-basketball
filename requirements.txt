@@ -5,3 +5,4 @@ matplotlib
 seaborn
 plotly
 lxml
+html5lib
