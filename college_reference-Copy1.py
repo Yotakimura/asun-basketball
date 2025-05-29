@@ -5,7 +5,7 @@ import seaborn as sns
 import requests
 
 
-tables = pd.read_html("2024-25 Men's Atlantic Sun Conference Season Summary _ College Basketball at Sports-Reference.com.html", flavor="bs4")
+tables = pd.read_html("2024-25.html")
 asun = tables[2]
 asun.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in asun.columns]
 asun['Conf %'] = asun['Conf._W'] / (asun['Conf._W'] + asun['Conf._L'])
@@ -39,7 +39,7 @@ asun.loc[:, 'School'] = asun['School'] + ' 2024'
 asun_2024 = asun
 
 
-tables = pd.read_html("2023-24 Men's Atlantic Sun Conference Season Summary _ College Basketball at Sports-Reference.com.html", flavor="bs4")
+tables = pd.read_html("2023-24.html")
 asun = tables[2]
 asun.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in asun.columns]
 asun['Conf %'] = asun['Conf._W'] / (asun['Conf._W'] + asun['Conf._L'])
