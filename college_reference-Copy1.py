@@ -347,6 +347,21 @@ with tab3:
         "Central Arkansas": ("https://ucasports.com/sports/mens-basketball/stats/2024-25", 7),
         "Bellarmine": ("https://athletics.bellarmine.edu/sports/mens-basketball/stats", 7),
     }
+
+
+
+    st.markdown("""
+    **How to use this tab:**
+    
+    - Select a team from the list on the left.
+    - The app will automatically fetch that team's game-by-game stats for the current season.
+    - For each selected team, the app splits all games into **Wins** and **Losses** and computes the average value of each stat in wins vs. losses.
+    - The resulting table shows, for every stat, how the team's performance differs between wins and losses, as well as the difference.
+    - Click on any stat in the dropdown below the table to see a visual bar chart comparing its average in wins vs. losses.
+    
+    **Tip:** Use this tab to quickly spot which stats most strongly correlate with winning or losing for each team.
+    """)
+
     
     st.markdown("### W/L Stats Comparison")
 
