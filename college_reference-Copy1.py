@@ -425,6 +425,18 @@ with tab3:
 with tab4:
     st.header("Play-By-Play Analysis")
 
+    st.markdown("""
+    **How to use this tool:**
+    1. Go to the official website of the school whose game you want to analyze.
+    2. Navigate to the **Men's Basketball** section.
+    3. Find and click on **Schedule**.
+    4. Select the game you want to analyze and click on **Box Score**.
+    5. Copy the **URL** (web address) from the Box Score page.
+    6. Paste that URL into the box below and press Enter.
+
+    This tool will then automatically extract and visualize the play-by-play data from that game!
+    """)
+
     url = st.text_input("Enter the URL of the play-by-play stats page:")
 
     if url:
