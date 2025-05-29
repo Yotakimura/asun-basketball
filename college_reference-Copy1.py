@@ -211,11 +211,12 @@ st.markdown(
 
 st.title("ASUN Basketball Insights")
 
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Radar Chart",
     "Heatmap", 
     "W/L Stats Comparison", 
-    "Play-By-Play Analysis"
+    "Play-By-Play Analysis",
+    "Private"
 ])
 
 
@@ -634,3 +635,28 @@ with tab4:
 
         except Exception as e:
             st.error(f"Error reading or processing the URL: {e}")
+
+
+
+
+with tab5:
+    st.header("Private Tab")
+
+    # Store password state in session_state to persist through reruns
+    if "tab5_authenticated" not in st.session_state:
+        st.session_state["tab5_authenticated"] = False
+
+    PASSWORD = "your_secret_password"  # <-- Change this to your desired password
+
+    if not st.session_state["tab5_authenticated"]:
+        password = st.text_input("Enter password to access this tab:", type="password")
+        if st.button("Submit"):
+            if password == PASSWORD:
+                st.session_state["tab5_authenticated"] = True
+                st.success("Access granted! Welcome to the private tab.")
+            else:
+                st.error("Incorrect password. Please try again.")
+    else:
+        # Private content goes here
+        st.success("You are viewing the private content on Tab 5!")
+        st.write("Put your sensitive or private content here.")
