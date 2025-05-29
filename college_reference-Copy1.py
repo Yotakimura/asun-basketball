@@ -197,7 +197,7 @@ def check_password():
         if st.button("Login"):
             if pw == PASSWORD:
                 st.session_state["authenticated"] = True
-                st.experimental_rerun()
+                st.rerun()  # <-- use st.rerun() here
             else:
                 st.error("Incorrect password. Please try again.")
         st.stop()
