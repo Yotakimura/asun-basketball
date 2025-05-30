@@ -613,9 +613,6 @@ with tab4:
             - Press **Pause** to stop the animation at any moment.
             - The chart shows a running total for your selected play type. For example, if you choose "Turnover," you'll see the cumulative number of turnovers for each team tick up as the game unfolds.
             - **Tip:** Hover over the lines to see the exact count at any time point.
-
-             **Example link:**
-             [https://letsgopeay.com/sports/mens-basketball/stats/2024-25/butler/boxscore/13550](https://letsgopeay.com/sports/mens-basketball/stats/2024-25/butler/boxscore/13550)
             
            This lets you visually track momentum and key swing moments for each stat throughout the game!
             """)
