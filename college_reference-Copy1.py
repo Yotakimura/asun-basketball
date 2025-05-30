@@ -710,41 +710,34 @@ with tab4:
 
 
 with tab5:
-    import openai
     st.markdown("""
     ### ASUN Basketball Chatbot 🤖
 
     Ask any questions about ASUN stats, teams, or how to use this dashboard.
     """)
 
-    # Requires OpenAI API key in .streamlit/secrets.toml as OPENAI_API_KEY
     openai_api_key = st.secrets.get("OPENAI_API_KEY", "")
     if not openai_api_key:
         st.error("OpenAI API key not found. Please add it to .streamlit/secrets.toml as OPENAI_API_KEY.")
     else:
-        openai.api_key = openai_api_key
+        client = openai.OpenAI(api_key=openai_api_key)
 
         if "messages" not in st.session_state:
             st.session_state.messages = []
 
-        # Display chat history
         for msg in st.session_state.messages:
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
 
-        # User input
         prompt = st.chat_input("Ask me anything about ASUN stats, teams, or this dashboard!")
         if prompt:
-            # Add user message to history
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
                 st.markdown(prompt)
             with st.chat_message("assistant"):
                 with st.spinner("Thinking..."):
                     try:
-                        # Compose conversation so far for LLM
                         conversation = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
-                        # Add a system prompt for context
                         if not any(m["role"] == "system" for m in conversation):
                             conversation.insert(0, {
                                 "role": "system",
@@ -754,8 +747,7 @@ with tab5:
                                     "If you don't know, say so honestly."
                                 )
                             })
-                        # Call the OpenAI API
-                        response = openai.ChatCompletion.create(
+                        response = client.chat.completions.create(
                             model="gpt-3.5-turbo",
                             messages=conversation,
                             max_tokens=400,
@@ -763,7 +755,6 @@ with tab5:
                         )
                         answer = response.choices[0].message.content
                         st.markdown(answer)
-                        # Add assistant reply to history
                         st.session_state.messages.append({"role": "assistant", "content": answer})
                     except Exception as e:
                         st.error(f"Error: {e}")
