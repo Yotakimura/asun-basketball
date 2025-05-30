@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import requests
+import openai
 
 
 tables = pd.read_html("2024-25.html")
@@ -754,6 +755,7 @@ with tab5:
                             temperature=0.3,
                         )
                         answer = response.choices[0].message.content
+
                         st.markdown(answer)
                         st.session_state.messages.append({"role": "assistant", "content": answer})
                     except Exception as e:
