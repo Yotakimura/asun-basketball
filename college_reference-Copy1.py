@@ -710,6 +710,7 @@ with tab4:
 
 
 with tab5:
+    import openai
     st.markdown("""
     ### ASUN Basketball Chatbot 🤖
 
